@@ -617,38 +617,46 @@
         [self presentQuestionList];
     }]];
 
-    [sheet addAction:[UIAlertAction actionWithTitle:([store hasPDFForEdition:edition] ? @"استبدال ملف الإصدار"
-                                                                                     : @"استيراد ملف الإصدار (PDF)")
+    [sheet addAction:[UIAlertAction actionWithTitle:([store isUsingBuiltInPDFForEdition:edition] ? @"استيراد ملف إصدار بديل (PDF)"
+                                                                                                  : @"استبدال ملف الإصدار")
                                               style:UIAlertActionStyleDefault
                                             handler:^(UIAlertAction *action) {
         [self importPDF];
     }]];
 
-    [sheet addAction:[UIAlertAction actionWithTitle:[NSString stringWithFormat:@"عدد الأسئلة في الصفحة: %@",
-                                                       MFDigits([store questionsPerPageForEdition:edition])]
-                                              style:UIAlertActionStyleDefault
-                                            handler:^(UIAlertAction *action) {
-        [self promptTitle:@"عدد الأسئلة في كل صفحة"
-                  message:@"مثلاً ٢ يعني كل صفحة فيها سؤالين"
-                    value:[NSString stringWithFormat:@"%ld", (long)[store questionsPerPageForEdition:edition]]
-                  handler:^(NSString *text) {
-            [store setQuestionsPerPage:text.integerValue edition:edition];
-            [self reloadPages];
-        }];
-    }]];
+    if ([store isUsingBuiltInPDFForEdition:edition]) {
+        // الملف المرفق مرتب: كل إصدار ٤٩ صفحة (غلاف + ٤٨ سؤالاً)، فلا يحتاج إعداد صفحات.
+        [sheet addAction:[UIAlertAction actionWithTitle:[NSString stringWithFormat:@"الصفحات من الملف المرفق · صفحة السؤال %@",
+                                                           MFDigits([store pageForQuestion:self.question edition:edition])]
+                                                  style:UIAlertActionStyleDefault
+                                                handler:nil]];
+    } else {
+        [sheet addAction:[UIAlertAction actionWithTitle:[NSString stringWithFormat:@"عدد الأسئلة في الصفحة: %@",
+                                                           MFDigits([store questionsPerPageForEdition:edition])]
+                                                  style:UIAlertActionStyleDefault
+                                                handler:^(UIAlertAction *action) {
+            [self promptTitle:@"عدد الأسئلة في كل صفحة"
+                      message:@"مثلاً ٢ يعني كل صفحة فيها سؤالين"
+                        value:[NSString stringWithFormat:@"%ld", (long)[store questionsPerPageForEdition:edition]]
+                      handler:^(NSString *text) {
+                [store setQuestionsPerPage:text.integerValue edition:edition];
+                [self reloadPages];
+            }];
+        }]];
 
-    [sheet addAction:[UIAlertAction actionWithTitle:[NSString stringWithFormat:@"أول صفحة فيها الأسئلة: %@",
-                                                       MFDigits([store firstPageForEdition:edition])]
-                                              style:UIAlertActionStyleDefault
-                                            handler:^(UIAlertAction *action) {
-        [self promptTitle:@"أول صفحة فيها الأسئلة"
-                  message:@"رقم الصفحة اللي يبدأ فيها السؤال الأول"
-                    value:[NSString stringWithFormat:@"%ld", (long)[store firstPageForEdition:edition]]
-                  handler:^(NSString *text) {
-            [store setFirstPage:text.integerValue edition:edition];
-            [self reloadPages];
-        }];
-    }]];
+        [sheet addAction:[UIAlertAction actionWithTitle:[NSString stringWithFormat:@"أول صفحة فيها الأسئلة: %@",
+                                                           MFDigits([store firstPageForEdition:edition])]
+                                                  style:UIAlertActionStyleDefault
+                                                handler:^(UIAlertAction *action) {
+            [self promptTitle:@"أول صفحة فيها الأسئلة"
+                      message:@"رقم الصفحة اللي يبدأ فيها السؤال الأول"
+                        value:[NSString stringWithFormat:@"%ld", (long)[store firstPageForEdition:edition]]
+                      handler:^(NSString *text) {
+                [store setFirstPage:text.integerValue edition:edition];
+                [self reloadPages];
+            }];
+        }]];
+    }
 
     [sheet addAction:[UIAlertAction actionWithTitle:@"إزاحة كل التوقيتات (ثواني)"
                                               style:UIAlertActionStyleDefault

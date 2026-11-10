@@ -8,6 +8,10 @@
 @property (nonatomic, strong) NSArray<MFEdition *> *editions;
 @end
 
+static NSString * const kMFBuiltInPDFResource = @"almufakkir-editions";
+// كل إصدار في الملف المرفق يشغل ٤٩ صفحة: غلاف ثم ٤٨ سؤالاً بالترتيب.
+static const NSInteger kMFBuiltInPagesPerEdition = 49;
+
 @implementation MFStore
 
 + (instancetype)shared {
@@ -191,10 +195,34 @@
 
 #pragma mark - ملف الإصدار
 
-- (NSString *)pdfPathForEdition:(NSInteger)edition {
+- (NSString *)builtInPDFPath {
+    return [[NSBundle mainBundle] pathForResource:kMFBuiltInPDFResource ofType:@"pdf"];
+}
+
+- (NSInteger)builtInPagesPerEdition {
+    return kMFBuiltInPagesPerEdition;
+}
+
+- (BOOL)isUsingBuiltInPDFForEdition:(NSInteger)edition {
+    return [self importedPDFPathForEdition:edition] == nil && [self builtInPDFPath] != nil;
+}
+
+- (NSInteger)builtInPageForQuestion:(NSInteger)question edition:(NSInteger)edition {
+    if (question < 1) {
+        question = 1;
+    }
+    return (edition - 1) * kMFBuiltInPagesPerEdition + 1 + question;
+}
+
+- (NSString *)importedPDFPathForEdition:(NSInteger)edition {
     NSString *path = [self.pdfsDir stringByAppendingPathComponent:
                       [NSString stringWithFormat:@"edition-%ld.pdf", (long)edition]];
     return [[NSFileManager defaultManager] fileExistsAtPath:path] ? path : nil;
+}
+
+- (NSString *)pdfPathForEdition:(NSInteger)edition {
+    NSString *imported = [self importedPDFPathForEdition:edition];
+    return imported ?: [self builtInPDFPath];
 }
 
 - (BOOL)hasPDFForEdition:(NSInteger)edition {
@@ -274,6 +302,9 @@
         if (override > 0) {
             return override;
         }
+    }
+    if ([self isUsingBuiltInPDFForEdition:edition]) {
+        return [self builtInPageForQuestion:question edition:edition];
     }
     NSInteger qpp = [self questionsPerPageForEdition:edition];
     NSInteger first = [self firstPageForEdition:edition];

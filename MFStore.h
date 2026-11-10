@@ -29,6 +29,11 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)resetProgressForEdition:(NSInteger)edition;
 
 // ملف الإصدار
+// الملف المرفق داخل التطبيق: ٢٤٥٠ صفحة = ٥٠ إصدار × ٤٩ (غلاف + ٤٨ سؤال).
+- (nullable NSString *)builtInPDFPath;
+- (NSInteger)builtInPagesPerEdition;
+- (BOOL)isUsingBuiltInPDFForEdition:(NSInteger)edition;
+- (NSInteger)builtInPageForQuestion:(NSInteger)question edition:(NSInteger)edition;
 - (BOOL)hasPDFForEdition:(NSInteger)edition;
 - (nullable NSString *)pdfPathForEdition:(NSInteger)edition;
 - (BOOL)importPDFFromURL:(NSURL *)url edition:(NSInteger)edition error:(NSError **)error;
