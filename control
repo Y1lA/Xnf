@@ -1,0 +1,9 @@
+Package: com.xnf.almufakkir
+Name: XnfAlMufakkir
+Version: 1.0
+Architecture: iphoneos-arm64
+Description: تطبيق المفكر للقدرات - ٥٠ إصدار مع ربط شرح يوتيوب
+Maintainer: Xnf
+Author: Xnf
+Section: Applications
+Depends: firmware (>= 15.0)
