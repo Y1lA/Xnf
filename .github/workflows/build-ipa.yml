@@ -30,13 +30,27 @@ jobs:
       - name: Build
         run: |
           export PATH="$THEOS/bin:$PATH"
-          make clean
+          make clean || true
           make FINALPACKAGE=1
+          # نسخ Theos تختلف في مكان الـ.app، فنلقطه من أي مكان بعد البناء.
+          if ! find . -type d -name '*.app' -not -path './.git/*' | grep -q .; then
+            echo "ما طلع .app من make، نجرّب make package"
+            make package FINALPACKAGE=1
+          fi
+          echo "--- ناتج البناء ---"
+          find . -type d -name '*.app' -not -path './.git/*' | head -5
+          find .theos -maxdepth 4 2>/dev/null | head -40
 
       - name: Package unsigned IPA
         run: |
-          APP=$(find .theos/_/Applications -maxdepth 1 -name '*.app' | head -n 1)
-          test -n "$APP"
+          APP=$(find . -type d -name '*.app' -not -path './.git/*' | head -n 1)
+          if [ -z "$APP" ]; then
+            echo "ما لقيت أي .app — هذي محتويات المشروع:"
+            find . -maxdepth 4 -not -path './.git/*' | head -60
+            exit 1
+          fi
+          echo "app: $APP"
+          rm -rf Payload XnfAlMufakkir.ipa
           mkdir -p Payload
           cp -R "$APP" Payload/
           zip -qry XnfAlMufakkir.ipa Payload
